@@ -1,0 +1,64 @@
+<aside class="w-64 bg-[#232936] text-white flex flex-col h-screen fixed left-0 top-0 shadow-xl">
+    <div class="p-6 flex items-center gap-3">
+        <div class="flex-shrink-0">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-auto rounded-md object-contain">
+        </div>
+        <div class="min-w-0">
+            <h1 class="text-xl font-bold tracking-wide leading-tight truncate text-gray-100">MnE System</h1>
+        </div>
+    </div>
+    
+    <div class="border-t border-gray-700 flex flex-col flex-1 overflow-hidden">
+        <nav class="flex-1 px-4 mt-6 space-y-2 overflow-y-auto custom-scrollbar">
+            @foreach(\App\Models\Menu::orderBy('order_no')->get() as $menu)
+                <a href="{{ route('menus.show', $menu->id) }}" 
+                   class="flex items-center gap-3 px-4 py-3 {{ request()->fullUrlIs(route('menus.show', $menu->id)) ? 'bg-[#2a3142] border border-[#4f70ce] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-md transition group">
+                    
+                    @if($menu->icon_path)
+                        <img src="{{ asset('storage/' . $menu->icon_path) }}" class="w-5 h-5 opacity-70 group-hover:opacity-100 object-contain transition-opacity">
+                    @else
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                        </svg>
+                    @endif
+                    
+                    <span class="text-sm font-medium">{{ $menu->name }}</span>
+                </a>
+            @endforeach
+        </nav>
+
+        <div class="px-4 pb-6 space-y-2">
+            <div class="border-t border-gray-700 pt-4 space-y-2">
+                
+                {{-- Manage Users --}}
+                <a href="{{ route('users.index') }}" 
+                    class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('users.index') ? 'bg-[#2a3142] border border-[#4f70ce]' : 'text-gray-300 hover:text-white hover:bg-white/5' }} rounded-md transition">
+                    <svg class="w-5 h-5 {{ request()->routeIs('users.index') ? 'text-white' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Manage Users</span>
+                </a>
+
+                {{-- Menu Options --}}
+                <a href="{{ route('menus.index') }}" 
+                    class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('menus.index') ? 'bg-[#2a3142] border border-[#4f70ce]' : 'text-gray-300 hover:text-white hover:bg-white/5' }} rounded-md transition group">
+                    <svg class="w-5 h-5 {{ request()->routeIs('menus.index') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Menu Options</span>
+                </a>
+            <div class="border-t border-gray-700 pt-4 space-y-2">
+                {{-- Logout --}}
+                <form method="POST" action="{{ route('logout') }}" class="pt-2">
+                    @csrf
+                    <button type="submit" class="flex w-full items-center gap-3 px-4 py-3 text-[#e06c6c] hover:text-red-400 hover:bg-red-500/5 transition group rounded-md">
+                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Log Out</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</aside>
