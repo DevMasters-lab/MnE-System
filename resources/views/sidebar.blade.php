@@ -10,6 +10,18 @@
     
     <div class="border-t border-gray-700 flex flex-col flex-1 overflow-hidden">
         <nav class="flex-1 px-4 mt-6 space-y-2 overflow-y-auto custom-scrollbar">
+            
+            {{-- ADDED: Dashboard Link --}}
+            <a href="{{ route('dashboard') }}" 
+               class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('dashboard') ? 'bg-[#2a3142] border border-[#4f70ce] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-md transition group">
+                <svg class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span class="text-sm font-medium">Dashboard</span>
+            </a>
+
+            <div class="border-t border-gray-700 my-2 opacity-50"></div>
+
             @foreach(\App\Models\Menu::orderBy('order_no')->get() as $menu)
                 <a href="{{ route('menus.show', $menu->id) }}" 
                    class="flex items-center gap-3 px-4 py-3 {{ request()->fullUrlIs(route('menus.show', $menu->id)) ? 'bg-[#2a3142] border border-[#4f70ce] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-md transition group">
@@ -47,17 +59,19 @@
                     </svg>
                     <span class="text-sm font-medium">Menu Options</span>
                 </a>
-            <div class="border-t border-gray-700 pt-4 space-y-2">
-                {{-- Logout --}}
-                <form method="POST" action="{{ route('logout') }}" class="pt-2">
-                    @csrf
-                    <button type="submit" class="flex w-full items-center gap-3 px-4 py-3 text-[#e06c6c] hover:text-red-400 hover:bg-red-500/5 transition group rounded-md">
-                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                        </svg>
-                        <span class="text-sm font-medium">Log Out</span>
-                    </button>
-                </form>
+
+                <div class="border-t border-gray-700 pt-4 space-y-2">
+                    {{-- Logout --}}
+                    <form method="POST" action="{{ route('logout') }}" class="pt-2">
+                        @csrf
+                        <button type="submit" class="flex w-full items-center gap-3 px-4 py-3 text-[#e06c6c] hover:text-red-400 hover:bg-red-500/5 transition group rounded-md">
+                            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            <span class="text-sm font-medium">Log Out</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

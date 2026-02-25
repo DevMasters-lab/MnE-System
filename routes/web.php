@@ -3,13 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\MenuController; // Import your new controller
+use App\Http\Controllers\MenuController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
-// 1. Redirect the root URL straight to the users page
+// 1. Unified Redirect: Everyone goes to the dashboard after logging in
 Route::get('/', function () {
-    return redirect('/users');
+    return Auth::check() ? redirect('/dashboard') : redirect('/login');
 });
 
 // 2. Authentication Routes
@@ -23,19 +23,23 @@ Route::post('/logout', function (Request $request) {
     return redirect('/login');
 })->name('logout');
 
-// 3. Manage Users Routes
+// 3. Authenticated Routes (No permission gates applied)
 Route::middleware('auth')->group(function () {
-    // User Routes
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    
+    // The main landing page for everyone
+    Route::get('/dashboard', [MenuController::class, 'dashboard'])->name('dashboard');
 
-    // Menu Configuration (Matched to your controller methods)
+    // Manage Users Routes (Open to all users)
+    Route::get('/manage-user', [UserController::class, 'index'])->name('users.index');
+    Route::post('/manage-user', [UserController::class, 'store'])->name('users.store');
+    Route::get('/manage-user/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/manage-user/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/manage-user/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Menu Configuration (Open to all users)
     Route::get('/menu-options', [MenuController::class, 'index'])->name('menus.index');
     Route::post('/menu-options', [MenuController::class, 'store'])->name('menus.store');
-    Route::get('/menu-options/{menu}/edit', [MenuController::class, 'edit'])->name('menus.edit'); // Required for JavaScript Fetch
+    Route::get('/menu-options/{menu}/edit', [MenuController::class, 'edit'])->name('menus.edit');
     Route::put('/menu-options/{menu}', [MenuController::class, 'update'])->name('menus.update');
     Route::delete('/menu-options/{menu}', [MenuController::class, 'destroy'])->name('menus.destroy');
 

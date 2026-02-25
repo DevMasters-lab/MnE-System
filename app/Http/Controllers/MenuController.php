@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\Storage;
 
 class MenuController extends Controller
 {
+    public function dashboard()
+    {
+        $menus = Menu::orderBy('order_no')->get();
+
+        return view('dashboard', compact('menus'));
+    }
+    
     public function index()
     {
         $menus = Menu::orderBy('order_no')->get();

@@ -12,4 +12,5 @@ class Menu extends Model
     {
         return $this->hasMany(Card::class)->orderBy('order_no');
     }
+    
 }
