@@ -25,7 +25,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:6',
             'role' => 'required|string',
         ]);
 
@@ -49,11 +49,9 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            // Ignore the current user's email when checking for unique emails
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'role' => 'required|string',
-            // Make password nullable so they don't have to change it every time
-            'password' => 'nullable|string|min:8', 
+            'password' => 'nullable|string|min:6', 
         ]);
 
         $data = [

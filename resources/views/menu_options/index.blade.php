@@ -53,12 +53,10 @@
                     <td class="px-8 py-6 text-gray-500 font-medium">{{ $menu->order_no }}</td>
                     <td class="px-8 py-6">
                         <div class="flex items-center justify-center gap-5">
-                            {{-- Edit Button --}}
                             <button onclick="openEditModal({{ $menu->id }})" class="text-blue-500 hover:scale-110 transition-transform">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             </button>
                             
-                            {{-- Delete Button --}}
                             <form action="{{ route('menus.destroy', $menu->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this menu option?')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="text-red-400 hover:text-red-600 hover:scale-110 transition-transform">
@@ -93,14 +91,13 @@
 
         <form id="menuForm" method="POST" enctype="multipart/form-data">
             @csrf
-            <div id="methodField"></div> {{-- Placeholder for hidden PUT method --}}
+            <div id="methodField"></div> 
             
             <div class="p-10 space-y-8">
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">Menu Name</label>
                     <input type="text" name="name" id="menu_name" required
-                           class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300"
-                           placeholder="e.g. Analytics Dashboard">
+                           class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300">
                 </div>
 
                 <div class="grid grid-cols-2 gap-8">
@@ -130,13 +127,25 @@
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">Menu Icon Asset</label>
                     <div class="border-2 border-dashed border-gray-200 rounded-xl p-10 text-center hover:border-blue-300 hover:bg-blue-50/50 transition cursor-pointer relative group">
-                        <input type="file" name="icon" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        {{-- Added onchange for preview --}}
+                        <input type="file" name="icon" onchange="previewImage(this)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                         <div class="space-y-3">
                             <div class="bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center mx-auto text-blue-500 transition-transform group-hover:scale-110">
                                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                             </div>
                             <p class="text-sm text-gray-600 font-bold">Select Icon to Upload</p>
                             <p class="text-[10px] text-gray-400 uppercase tracking-widest">PNG, JPG, or SVG (Max 2MB)</p>
+                        </div>
+                    </div>
+
+                    {{-- Image Preview Container --}}
+                    <div id="previewContainer" class="hidden mt-6 p-4 border border-gray-100 rounded-xl bg-[#f8fafc] flex items-center gap-4 animate-fade-in">
+                        <div class="w-16 h-16 bg-white rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
+                            <img id="imagePreview" src="#" alt="Preview" class="w-full h-full object-contain p-2">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-[#1e2336] truncate" id="fileNameDisplay"></p>
+                            <button type="button" onclick="removeSelectedImage()" class="text-[9px] font-bold text-red-500 uppercase tracking-wider mt-1 hover:underline">Remove Image</button>
                         </div>
                     </div>
                 </div>
@@ -165,12 +174,34 @@
     const typeSelector = document.getElementById('typeSelector');
     const urlField = document.getElementById('urlField');
 
-    // Standard open for new menu (POST)
+    // Image Preview Logic
+    window.previewImage = function(input) {
+        const container = document.getElementById('previewContainer');
+        const preview = document.getElementById('imagePreview');
+        const fileName = document.getElementById('fileNameDisplay');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                fileName.innerText = input.files[0].name;
+                container.classList.remove('hidden');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    window.removeSelectedImage = function() {
+        const fileInput = document.querySelector('input[name="icon"]');
+        fileInput.value = '';
+        document.getElementById('previewContainer').classList.add('hidden');
+    }
+
     window.openModal = function() {
         resetForm();
         document.getElementById('modalTitle').innerText = 'Add Menu Option';
         menuForm.action = "{{ route('menus.store') }}";
-        document.getElementById('methodField').innerHTML = ''; // Clear PUT method
+        document.getElementById('methodField').innerHTML = '';
         document.getElementById('submitBtn').innerText = 'Save Menu';
         
         modal.classList.remove('hidden');
@@ -181,7 +212,6 @@
         }, 10);
     }
 
-    // Open for editing (PUT)
     window.openEditModal = function(id) {
         resetForm();
         fetch(`/menu-options/${id}/edit`)
@@ -223,6 +253,7 @@
     function resetForm() {
         menuForm.reset();
         urlField.classList.add('hidden');
+        removeSelectedImage(); // Clear preview on reset
     }
 
     backdrop.addEventListener('click', closeModal);

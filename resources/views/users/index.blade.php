@@ -24,13 +24,13 @@
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">Full Name</label>
                     <input type="text" name="name" value="{{ $editUser->name ?? '' }}" required 
-                        class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300" placeholder="e.g. Sithan Virath">
+                        class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all placeholder:text-gray-300">
                 </div>
                 
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">Email Address</label>
                     <input type="email" name="email" value="{{ $editUser->email ?? '' }}" required 
-                        class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all" placeholder="admin">
+                        class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all">
                 </div>
 
                 <div>
@@ -38,13 +38,14 @@
                         Password @if($editUser) <span class="lowercase text-gray-300 font-normal italic ml-1">(Optional)</span> @endif
                     </label>
                     <input type="password" name="password" {{ $editUser ? '' : 'required' }} 
-                        class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all" placeholder="••••••••">
+                        class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all">
                 </div>
 
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">User Role</label>
                     <select name="role" class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all bg-white cursor-pointer">
-                        @foreach(['Team Lead', 'Backend Developer', 'Frontend Developer', 'UI/UX Designer', 'M&E Specialist', 'Admin'] as $role)
+                        {{-- @foreach(['Team Lead', 'Backend Developer', 'Frontend Developer', 'UI/UX Designer', 'M&E Specialist', 'Admin'] as $role) --}}
+                        @foreach(['User', 'Admin'] as $role)
                             <option value="{{ $role }}" {{ (isset($editUser) && $editUser->role == $role) ? 'selected' : '' }}>{{ $role }}</option>
                         @endforeach
                     </select>

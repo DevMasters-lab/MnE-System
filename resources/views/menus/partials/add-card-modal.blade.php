@@ -17,7 +17,7 @@
                 <div class="grid grid-cols-2 gap-6">
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Title</label>
-                        <input type="text" name="title" placeholder="e.g. YouTube" required 
+                        <input type="text" name="title" required 
                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/10 outline-none transition">
                     </div>
                     <div>
@@ -29,7 +29,7 @@
 
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Short Description</label>
-                    <input type="text" name="short_description" placeholder="Brief description" required 
+                    <input type="text" name="short_description" required 
                            class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500/10 outline-none transition">
                 </div>
 
