@@ -9,18 +9,17 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
    public function index(Request $request)
-{
-    $users = User::all();
-    // Fetch all roles from the database so they appear in your UI
-    $roles = \Spatie\Permission\Models\Role::all(); 
-    
-    $editUser = null;
-    if ($request->has('edit')) {
-        $editUser = User::find($request->edit);
-    }
+    {
+        $users = User::all();
+        $roles = \Spatie\Permission\Models\Role::all(); 
+        
+        $editUser = null;
+        if ($request->has('edit')) {
+            $editUser = User::find($request->edit);
+        }
 
-    return view('users.index', compact('users', 'editUser', 'roles'));
-}
+        return view('users.index', compact('users', 'editUser', 'roles'));
+    }
 
     public function store(Request $request)
     {
@@ -48,33 +47,45 @@ class UserController extends Controller
         return view('users.edit', compact('user'));
     }
 
-    public function update(Request $request, User $user)
+public function update(Request $request, $id)
     {
+        // 1. Manually find the exact user by ID to bypass the Laravel routing bug
+        $user = \App\Models\User::findOrFail($id);
+
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'role' => 'required|string',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'role'     => 'required|exists:roles,name', 
             'password' => 'nullable|string|min:6', 
         ]);
 
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role,
-            'is_active' => $request->has('is_active') ? true : false,
-        ];
+        // 2. Update standard data AND your custom 'role' column
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->role = $request->role; // Updates the 'role' column in phpMyAdmin
+        $user->is_active = $request->has('is_active'); 
 
+        // Update password only if provided
         if ($request->filled('password')) {
-            $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+            $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
         }
 
-        $user->update($data);
+        $user->save(); 
 
-        return redirect()->route('users.index')->with('success', 'User updated successfully.');
+        // 3. Sync the Spatie 'model_has_roles' table
+        $roleObj = \Spatie\Permission\Models\Role::where('name', $request->role)->first();
+        if ($roleObj) {
+            $user->syncRoles([$roleObj]); 
+        }
+
+        // 4. Purge the cache so the UI updates immediately
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        return redirect()->route('users.index')->with('success', 'Member updated successfully!');
     }
-
-    public function destroy(User $user)
+public function destroy($id)
     {
+        $user = \App\Models\User::findOrFail($id);
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }

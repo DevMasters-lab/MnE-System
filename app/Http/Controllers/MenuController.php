@@ -11,22 +11,15 @@ use Spatie\Permission\Models\Role;
 
 class MenuController extends Controller
 {
-    /**
-     * Clear Spatie Permission Cache helper.
-     */
     private function clearPermissionCache()
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 
-    /**
-     * Dashboard: Filtered by permissions.
-     */
     public function dashboard()
     {
         $allMenus = Menu::orderBy('order_no')->get();
 
-        // Only show menus the user has permission for
         $menus = $allMenus->filter(function ($menu) {
             return auth()->user()->can(strtoupper(trim($menu->name)));
         });
@@ -40,9 +33,6 @@ class MenuController extends Controller
         return view('menu_options.index', compact('menus'));
     }
 
-    /**
-     * Store: Create Menu + Permission + Auto-Assign Admin + Clear Cache.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -61,19 +51,16 @@ class MenuController extends Controller
 
         $menu = Menu::create($data);
 
-        // 1. Generate Permission
         $permission = Permission::firstOrCreate([
             'name' => strtoupper(trim($menu->name)),
             'guard_name' => 'web'
         ]);
 
-        // 2. Auto-Assign to Admin Role
         $adminRole = Role::where('name', 'Admin')->first();
         if ($adminRole) {
             $adminRole->givePermissionTo($permission);
         }
 
-        // 3. NUCLEAR: Clear cache so it works immediately
         $this->clearPermissionCache();
 
         return back()->with('success', 'Menu option added successfully.');
@@ -81,7 +68,6 @@ class MenuController extends Controller
 
     public function show(Menu $menu_option)
     {
-        // Permission check with name cleaning
         $permissionName = strtoupper(trim($menu_option->name));
 
         if (!auth()->user()->can($permissionName)) {
@@ -113,9 +99,6 @@ class MenuController extends Controller
         return response()->json($menu_option);
     }
 
-    /**
-     * Update: Update Menu + Rename Permission + Clear Cache.
-     */
     public function update(Request $request, Menu $menu_option)
     {
         $request->validate([
@@ -159,9 +142,6 @@ class MenuController extends Controller
         return redirect()->route('menus.index')->with('success', 'Menu updated successfully.');
     }
 
-    /**
-     * Destroy: Delete Menu + Delete Permission + Clear Cache.
-     */
     public function destroy(Menu $menu_option)
     {
         $permission = Permission::where('name', strtoupper(trim($menu_option->name)))->first();
@@ -176,8 +156,6 @@ class MenuController extends Controller
         
         return back()->with('success', 'Menu deleted successfully.');
     }
-
-    // --- Sub-Card Logic (Unchanged but included for completeness) ---
 
     public function storeCard(Request $request, Menu $menu)
     {

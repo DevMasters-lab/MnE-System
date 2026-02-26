@@ -8,12 +8,8 @@ use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
-    /**
-     * Display a listing of the roles and handle Edit Mode.
-     */
     public function index(Request $request)
     {
-        // 1. Ensure core system permissions always exist
         $defaultPermissions = ['DASHBOARD', 'MANAGE USER', 'MENU OPTION', 'MANAGE ROLE'];
 
         $adminRole = Role::where('name', 'Admin')->first();
@@ -25,13 +21,10 @@ class RoleController extends Controller
             ]);
         }
 
-        // 2. Force Admin to sync with ALL permissions (System + Dynamic Menus)
-        // This ensures Admin always has 100% access without manual checking
         if ($adminRole) {
             $adminRole->syncPermissions(Permission::all());
         }
 
-        // 3. Fetch data for the UI
         $permissions = Permission::all();
         $roles = Role::with('permissions')->latest()->paginate(10);
         
@@ -43,9 +36,6 @@ class RoleController extends Controller
         return view('admin.roles.index', compact('roles', 'role', 'permissions'));
     }
 
-    /**
-     * Store a newly created role in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -59,7 +49,6 @@ class RoleController extends Controller
         ]);
 
         if ($request->has('permissions')) {
-            // Safety check: ensure permission rows exist before syncing
             foreach ($request->permissions as $permissionName) {
                 Permission::firstOrCreate([
                     'name' => $permissionName, 
@@ -69,12 +58,9 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        return redirect()->route('roles.index')->with('success', 'Role created and linked!');
+        return redirect()->route('roles.index')->with('success', 'Role created!');
     }
 
-    /**
-     * Update the specified role in storage.
-     */
     public function update(Request $request, $id)
     {
         $role = Role::findOrFail($id);
@@ -95,21 +81,16 @@ class RoleController extends Controller
             }
             $role->syncPermissions($request->permissions);
         } else {
-            // If no checkboxes are selected, remove all permissions from this role
             $role->syncPermissions([]);
         }
 
         return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
     }
 
-    /**
-     * Remove the specified role from storage.
-     */
     public function destroy($id)
     {
         $role = Role::findOrFail($id);
         
-        // Safety: Prevent accidental lockout by protecting the Admin role
         if($role->name === 'Admin') {
             return redirect()->back()->with('error', 'The Master Admin role cannot be deleted.');
         }
