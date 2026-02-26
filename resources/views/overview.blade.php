@@ -58,10 +58,10 @@
     </div>
 
     {{-- Interactive Module Grid --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         @forelse($menus as $menu)
             @can(strtoupper($menu->name))
-                <a href="{{ route('menus.show', $menu->id) }}" 
+                <a href="{{ route('menus.show', $menu->name) }}" 
                 class="group relative bg-[#232936] p-8 rounded-3xl border border-transparent hover:border-[#4f70ce] transition-all duration-300 shadow-xl hover:-translate-y-2">
                     
                     <div class="w-14 h-14 bg-slate-700/50 rounded-2xl flex items-center justify-center group-hover:bg-[#4f70ce] transition-all mb-6 shadow-inner">
@@ -75,9 +75,9 @@
                     </div>
                     
                     <h3 class="text-xl font-bold text-white mb-2 group-hover:text-[#4f70ce] transition-colors">{{ $menu->name }}</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
+                    {{-- <p class="text-slate-400 text-sm leading-relaxed">
                         Click to access tools for {{ $menu->name }}.
-                    </p>
+                    </p> --}}
                 </a>
             @endcan
         @empty

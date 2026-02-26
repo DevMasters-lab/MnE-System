@@ -16,7 +16,7 @@ class MenuController extends Controller
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 
-    public function dashboard()
+    public function overview()
     {
         $allMenus = Menu::orderBy('order_no')->get();
 
@@ -24,7 +24,7 @@ class MenuController extends Controller
             return auth()->user()->can(strtoupper(trim($menu->name)));
         });
 
-        return view('dashboard', compact('menus'));
+        return view('overview', compact('menus'));
     }
     
     public function index()

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
-    return Auth::check() ? redirect('/dashboard') : redirect('/login');
+    return Auth::check() ? redirect('/overview') : redirect('/login');
 });
 
 Route::middleware('guest')->group(function () {
@@ -26,7 +26,7 @@ Route::post('/logout', function (Request $request) {
 
 Route::middleware('auth')->group(function () {
     
-    Route::get('/dashboard', [MenuController::class, 'dashboard'])->name('dashboard');
+    Route::get('/overview', [MenuController::class, 'overview'])->name('overview');
 
     Route::group(['middleware' => ['can:MANAGE ROLE']], function () {
         Route::resource('manage-roles', RoleController::class)->names([
@@ -60,5 +60,5 @@ Route::middleware('auth')->group(function () {
         Route::delete('/cards/{card}', [MenuController::class, 'destroyCard'])->name('cards.destroy');
     });
 
-    Route::get('/menus/{menu_option}', [MenuController::class, 'show'])->name('menus.show');
+    Route::get('/menus/{menu_option:name}', [MenuController::class, 'show'])->name('menus.show');
 });

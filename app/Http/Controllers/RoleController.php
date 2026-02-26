@@ -10,7 +10,7 @@ class RoleController extends Controller
 {
     public function index(Request $request)
     {
-        $defaultPermissions = ['DASHBOARD', 'MANAGE USER', 'MENU OPTION', 'MANAGE ROLE'];
+        $defaultPermissions = ['OVERVIEW', 'MANAGE USER', 'MENU OPTION', 'MANAGE ROLE'];
 
         $adminRole = Role::where('name', 'Admin')->first();
 

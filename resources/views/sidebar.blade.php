@@ -11,14 +11,14 @@
     <div class="border-t border-gray-700 flex flex-col flex-1 overflow-hidden">
         <nav class="flex-1 px-4 mt-6 space-y-2 overflow-y-auto custom-scrollbar">
             
-            {{-- Dashboard Link --}}
-            @can('DASHBOARD')
-            <a href="{{ route('dashboard') }}" 
-               class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('dashboard') ? 'bg-[#2a3142] border border-[#4f70ce] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-md transition group">
-                <svg class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {{-- Overview Link --}}
+            @can('OVERVIEW')
+            <a href="{{ route('overview') }}" 
+            class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('overview') ? 'bg-[#2a3142] border border-[#4f70ce] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-md transition group">
+                <svg class="w-5 h-5 {{ request()->routeIs('overview') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
-                <span class="text-sm font-medium">Dashboard</span>
+                <span class="text-sm font-medium">Overview</span>
             </a>
             @endcan
 
@@ -27,8 +27,9 @@
             {{-- Dynamic Menu Items --}}
             @foreach(\App\Models\Menu::orderBy('order_no')->get() as $menu)
                 @can(strtoupper($menu->name))
-                <a href="{{ route('menus.show', $menu->id) }}" 
-                   class="flex items-center gap-3 px-4 py-3 {{ request()->fullUrlIs(route('menus.show', $menu->id)) ? 'bg-[#2a3142] border border-[#4f70ce] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-md transition group">
+                {{-- FIX: Changed $menu->id to $menu->name below --}}
+                <a href="{{ route('menus.show', $menu->name) }}" 
+                   class="flex items-center gap-3 px-4 py-3 {{ request()->fullUrlIs(route('menus.show', $menu->name)) ? 'bg-[#2a3142] border border-[#4f70ce] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-md transition group">
                     
                     @if($menu->icon_path)
                         <img src="{{ asset('storage/' . $menu->icon_path) }}" class="w-5 h-5 opacity-70 group-hover:opacity-100 object-contain transition-opacity">

@@ -42,9 +42,10 @@
                     </div>
 
                     <div class="p-6 flex-1 flex flex-col bg-white">
-                        <h4 class="text-lg font-bold text-[#1e2336] uppercase tracking-wider mb-2 group-hover:text-blue-600 transition-colors">
+                        <h4 class="text-lg font-bold text-[#1e2336] uppercase tracking-wider mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
                             {{ $card->title }}
                         </h4>
+                        
                         <p class="text-sm text-gray-500 font-medium line-clamp-2 leading-relaxed">
                             {{ $card->short_description }}
                         </p>
@@ -178,7 +179,6 @@ function openEditCardModal(id) {
 
 function closeEditCardModal() {
     document.getElementById('editCardModal').classList.add('hidden');
-    // Reset image preview when closing
     document.getElementById('edit_image_input').value = '';
     document.getElementById('editPreviewContainer').classList.add('hidden');
 }

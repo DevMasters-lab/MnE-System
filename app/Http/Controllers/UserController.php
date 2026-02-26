@@ -47,9 +47,8 @@ class UserController extends Controller
         return view('users.edit', compact('user'));
     }
 
-public function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
-        // 1. Manually find the exact user by ID to bypass the Laravel routing bug
         $user = \App\Models\User::findOrFail($id);
 
         $request->validate([
@@ -59,31 +58,28 @@ public function update(Request $request, $id)
             'password' => 'nullable|string|min:6', 
         ]);
 
-        // 2. Update standard data AND your custom 'role' column
         $user->name = $request->name;
         $user->email = $request->email;
-        $user->role = $request->role; // Updates the 'role' column in phpMyAdmin
+        $user->role = $request->role; 
         $user->is_active = $request->has('is_active'); 
 
-        // Update password only if provided
         if ($request->filled('password')) {
             $user->password = \Illuminate\Support\Facades\Hash::make($request->password);
         }
 
         $user->save(); 
 
-        // 3. Sync the Spatie 'model_has_roles' table
         $roleObj = \Spatie\Permission\Models\Role::where('name', $request->role)->first();
         if ($roleObj) {
             $user->syncRoles([$roleObj]); 
         }
 
-        // 4. Purge the cache so the UI updates immediately
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         return redirect()->route('users.index')->with('success', 'Member updated successfully!');
     }
-public function destroy($id)
+    
+    public function destroy($id)
     {
         $user = \App\Models\User::findOrFail($id);
         $user->delete();
