@@ -6,14 +6,21 @@
 <div class="p-6">
     <div class="mb-8 px-2">
         <h2 class="text-2xl font-bold text-[#1e2336]">Manage Users</h2>
-        <p class="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-[0.2em]">System Access Control</p>
     </div>
 
+    {{-- Form Section --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 w-full mb-10 overflow-hidden">
-        <div class="px-8 py-6 border-b border-gray-50 bg-[#f8fafc]">
-            <h3 class="text-[13px] font-bold text-[#1e2336] uppercase tracking-[0.15em]">
-                {{ $editUser ? 'Edit Account Details' : 'Create New Account' }}
-            </h3>
+        <div class="px-8 py-6 border-b border-gray-50 bg-[#f8fafc] flex items-center gap-4">
+            <div class="p-3 bg-[#4f70ce] text-white rounded-2xl shadow-lg shadow-blue-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-[13px] font-bold text-[#1e2336] uppercase tracking-[0.15em]">
+                    {{ $editUser ? 'Edit Account Details' : 'Create New Account' }}
+                </h3>
+            </div>
         </div>
         
         <form action="{{ $editUser ? route('users.update', $editUser->id) : route('users.store') }}" method="POST" class="p-10">
@@ -43,10 +50,14 @@
 
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">User Role</label>
-                    <select name="role" class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all bg-white cursor-pointer">
-                        {{-- @foreach(['Team Lead', 'Backend Developer', 'Frontend Developer', 'UI/UX Designer', 'M&E Specialist', 'Admin'] as $role) --}}
-                        @foreach(['User', 'Admin'] as $role)
-                            <option value="{{ $role }}" {{ (isset($editUser) && $editUser->role == $role) ? 'selected' : '' }}>{{ $role }}</option>
+                    <select name="role" required class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all bg-white cursor-pointer">
+                        <option value="" disabled {{ !isset($editUser) ? 'selected' : '' }}>Select a Role</option>
+                        {{-- DYNAMIC ROLES LOOP --}}
+                        @foreach($roles as $role)
+                            <option value="{{ $role->name }}" 
+                                {{ (isset($editUser) && $editUser->hasRole($role->name)) ? 'selected' : '' }}>
+                                {{ $role->name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -75,6 +86,7 @@
         </form>
     </div>
 
+    {{-- Data Table --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 w-full overflow-hidden">
         <table class="w-full text-left border-collapse">
             <thead>
@@ -92,9 +104,14 @@
                     <td class="px-8 py-6 font-bold text-[#1e2336]">{{ $user->name }}</td>
                     <td class="px-8 py-6 text-gray-500 font-medium">{{ $user->email }}</td>
                     <td class="px-8 py-6">
-                        <span class="bg-blue-50 text-blue-500 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border border-blue-100">
-                            {{ $user->role ?? 'Admin' }}
-                        </span>
+                        {{-- DISPLAY ASSIGNED ROLES --}}
+                        @forelse($user->getRoleNames() as $roleName)
+                            <span class="bg-blue-50 text-blue-500 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border border-blue-100 inline-block mb-1">
+                                {{ $roleName }}
+                            </span>
+                        @empty
+                            <span class="text-gray-300 italic text-[10px]">No Role</span>
+                        @endforelse
                     </td>
                     <td class="px-8 py-6">
                         @if($user->is_active ?? true)

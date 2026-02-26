@@ -6,12 +6,30 @@ use Illuminate\Http\Request;
 use App\Models\Menu;
 use App\Models\Card; 
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class MenuController extends Controller
 {
+    /**
+     * Clear Spatie Permission Cache helper.
+     */
+    private function clearPermissionCache()
+    {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+    }
+
+    /**
+     * Dashboard: Filtered by permissions.
+     */
     public function dashboard()
     {
-        $menus = Menu::orderBy('order_no')->get();
+        $allMenus = Menu::orderBy('order_no')->get();
+
+        // Only show menus the user has permission for
+        $menus = $allMenus->filter(function ($menu) {
+            return auth()->user()->can(strtoupper(trim($menu->name)));
+        });
 
         return view('dashboard', compact('menus'));
     }
@@ -22,6 +40,9 @@ class MenuController extends Controller
         return view('menu_options.index', compact('menus'));
     }
 
+    /**
+     * Store: Create Menu + Permission + Auto-Assign Admin + Clear Cache.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -38,26 +59,64 @@ class MenuController extends Controller
             $data['icon_path'] = $path;
         }
 
-        Menu::create($data);
+        $menu = Menu::create($data);
+
+        // 1. Generate Permission
+        $permission = Permission::firstOrCreate([
+            'name' => strtoupper(trim($menu->name)),
+            'guard_name' => 'web'
+        ]);
+
+        // 2. Auto-Assign to Admin Role
+        $adminRole = Role::where('name', 'Admin')->first();
+        if ($adminRole) {
+            $adminRole->givePermissionTo($permission);
+        }
+
+        // 3. NUCLEAR: Clear cache so it works immediately
+        $this->clearPermissionCache();
+
         return back()->with('success', 'Menu option added successfully.');
     }
-    
-    public function show(Menu $menu)
+
+    public function show(Menu $menu_option)
     {
-        if ($menu->type === 'Sub(Card)') {
-            $cards = $menu->cards()->orderBy('order_no')->get();
-            return view('menus.subcard', compact('menu', 'cards'));
+        // Permission check with name cleaning
+        $permissionName = strtoupper(trim($menu_option->name));
+
+        if (!auth()->user()->can($permissionName)) {
+            abort(403, 'Unauthorized access to ' . $permissionName);
         }
-        
-        return view('menus.embedded', compact('menu'));
+
+        if ($menu_option->type === 'Sub(Card)') {
+            $cards = $menu_option->cards()->orderBy('order_no')->get();
+            return view('menus.subcard', ['menu' => $menu_option, 'cards' => $cards]);
+        }
+
+        $url = $menu_option->url;
+        $isYouTube = false;
+
+        if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match)) {
+            $url = "https://www.youtube.com/embed/" . $match[1];
+            $isYouTube = true;
+        }
+
+        return view('menus.embedded', [
+            'menu' => $menu_option,
+            'embedUrl' => $url,
+            'isYouTube' => $isYouTube
+        ]);
     }
 
-    public function edit(Menu $menu)
+    public function edit(Menu $menu_option) 
     {
-        return response()->json($menu);
+        return response()->json($menu_option);
     }
 
-    public function update(Request $request, Menu $menu)
+    /**
+     * Update: Update Menu + Rename Permission + Clear Cache.
+     */
+    public function update(Request $request, Menu $menu_option)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -68,23 +127,57 @@ class MenuController extends Controller
 
         $data = $request->only(['name', 'order_no', 'type', 'url']);
 
+        if ($request->type === 'Sub(Card)') {
+            $data['url'] = null;
+        }
+
         if ($request->hasFile('icon')) {
-            if ($menu->icon_path) { Storage::disk('public')->delete($menu->icon_path); }
+            if ($menu_option->icon_path) { 
+                Storage::disk('public')->delete($menu_option->icon_path); 
+            }
             $data['icon_path'] = $request->file('icon')->store('menu_icons', 'public');
         }
 
-        $menu->update($data);
-        return back()->with('success', 'Menu updated successfully.');
+        $oldName = strtoupper(trim($menu_option->name));
+        $newName = strtoupper(trim($request->name));
+
+        $menu_option->update($data);
+
+        if ($oldName !== $newName) {
+            $permission = Permission::where('name', $oldName)->first();
+            if ($permission) {
+                $permission->update(['name' => $newName]);
+            } else {
+                $permission = Permission::firstOrCreate(['name' => $newName, 'guard_name' => 'web']);
+                $adminRole = Role::where('name', 'Admin')->first();
+                if ($adminRole) { $adminRole->givePermissionTo($permission); }
+            }
+            // Clear cache after renaming
+            $this->clearPermissionCache();
+        }
+
+        return redirect()->route('menus.index')->with('success', 'Menu updated successfully.');
     }
 
-    public function destroy(Menu $menu)
+    /**
+     * Destroy: Delete Menu + Delete Permission + Clear Cache.
+     */
+    public function destroy(Menu $menu_option)
     {
-        if ($menu->icon_path) { Storage::disk('public')->delete($menu->icon_path); }
-        $menu->delete();
+        $permission = Permission::where('name', strtoupper(trim($menu_option->name)))->first();
+        if ($permission) {
+            $permission->delete();
+        }
+
+        if ($menu_option->icon_path) { Storage::disk('public')->delete($menu_option->icon_path); }
+        $menu_option->delete();
+
+        $this->clearPermissionCache();
+        
         return back()->with('success', 'Menu deleted successfully.');
     }
 
-    // --- SUB-CARD LOGIC ---
+    // --- Sub-Card Logic (Unchanged but included for completeness) ---
 
     public function storeCard(Request $request, Menu $menu)
     {
@@ -127,7 +220,6 @@ class MenuController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            // Delete the old image file to keep storage clean
             if ($card->image_path) { Storage::disk('public')->delete($card->image_path); }
             $data['image_path'] = $request->file('image')->store('card_images', 'public');
         }
@@ -135,6 +227,4 @@ class MenuController extends Controller
         $card->update($data);
         return back()->with('success', 'Card updated successfully.');
     }
-
-    
 }

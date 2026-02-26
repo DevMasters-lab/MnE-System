@@ -11,7 +11,8 @@
     <div class="border-t border-gray-700 flex flex-col flex-1 overflow-hidden">
         <nav class="flex-1 px-4 mt-6 space-y-2 overflow-y-auto custom-scrollbar">
             
-            {{-- ADDED: Dashboard Link --}}
+            {{-- Dashboard Link --}}
+            @can('DASHBOARD')
             <a href="{{ route('dashboard') }}" 
                class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('dashboard') ? 'bg-[#2a3142] border border-[#4f70ce] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-md transition group">
                 <svg class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,10 +20,13 @@
                 </svg>
                 <span class="text-sm font-medium">Dashboard</span>
             </a>
+            @endcan
 
             <div class="border-t border-gray-700 my-2 opacity-50"></div>
 
+            {{-- Dynamic Menu Items --}}
             @foreach(\App\Models\Menu::orderBy('order_no')->get() as $menu)
+                @can(strtoupper($menu->name))
                 <a href="{{ route('menus.show', $menu->id) }}" 
                    class="flex items-center gap-3 px-4 py-3 {{ request()->fullUrlIs(route('menus.show', $menu->id)) ? 'bg-[#2a3142] border border-[#4f70ce] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-md transition group">
                     
@@ -36,13 +40,16 @@
                     
                     <span class="text-sm font-medium">{{ $menu->name }}</span>
                 </a>
+                @endcan
             @endforeach
         </nav>
 
         <div class="px-4 pb-6 space-y-2">
+            {{-- Administrative Section: Only shows if user has at least one of these permissions --}}
+            @if(auth()->user()->can('MANAGE USER') || auth()->user()->can('MENU OPTION') || auth()->user()->can('MANAGE ROLE'))
             <div class="border-t border-gray-700 pt-4 space-y-2">
                 
-                {{-- Manage Users --}}
+                @can('MANAGE USER')
                 <a href="{{ route('users.index') }}" 
                     class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('users.index') ? 'bg-[#2a3142] border border-[#4f70ce]' : 'text-gray-300 hover:text-white hover:bg-white/5' }} rounded-md transition">
                     <svg class="w-5 h-5 {{ request()->routeIs('users.index') ? 'text-white' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,8 +57,9 @@
                     </svg>
                     <span class="text-sm font-medium">Manage Users</span>
                 </a>
+                @endcan
 
-                {{-- Menu Options --}}
+                @can('MENU OPTION')
                 <a href="{{ route('menus.index') }}" 
                     class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('menus.index') ? 'bg-[#2a3142] border border-[#4f70ce]' : 'text-gray-300 hover:text-white hover:bg-white/5' }} rounded-md transition group">
                     <svg class="w-5 h-5 {{ request()->routeIs('menus.index') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,19 +67,31 @@
                     </svg>
                     <span class="text-sm font-medium">Menu Options</span>
                 </a>
+                @endcan
 
-                <div class="border-t border-gray-700 pt-4 space-y-2">
-                    {{-- Logout --}}
-                    <form method="POST" action="{{ route('logout') }}" class="pt-2">
-                        @csrf
-                        <button type="submit" class="flex w-full items-center gap-3 px-4 py-3 text-[#e06c6c] hover:text-red-400 hover:bg-red-500/5 transition group rounded-md">
-                            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                            </svg>
-                            <span class="text-sm font-medium">Log Out</span>
-                        </button>
-                    </form>
-                </div>
+                @can('MANAGE ROLE')
+                <a href="{{ route('roles.index') }}" 
+                    class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('roles.*') ? 'bg-[#2a3142] border border-[#4f70ce]' : 'text-gray-300 hover:text-white hover:bg-white/5' }} rounded-md transition group">
+                    <svg class="w-5 h-5 {{ request()->routeIs('roles.*') ? 'text-white' : 'text-gray-400 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Manage Roles</span>
+                </a>
+                @endcan
+            </div>
+            @endif
+
+            {{-- Logout Section: Always visible --}}
+            <div class="border-t border-gray-700 pt-4 space-y-2">
+                <form method="POST" action="{{ route('logout') }}" class="pt-2">
+                    @csrf
+                    <button type="submit" class="flex w-full items-center gap-3 px-4 py-3 text-[#e06c6c] hover:text-red-400 hover:bg-red-500/5 transition group rounded-md">
+                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Log Out</span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>

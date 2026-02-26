@@ -2,11 +2,9 @@
 
 @section('content')
 <div class="p-6">
-    {{-- Header Section --}}
     <div class="flex items-center justify-between mb-8 w-full px-2">
         <div>
             <h2 class="text-2xl font-bold text-[#1e2336]">Menu Options Configuration</h2>
-            <p class="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-[0.2em]">Navigation Setup & Hierarchy</p>
         </div>
         
         <button onclick="openModal()" 
@@ -18,7 +16,6 @@
         </button>
     </div>
 
-    {{-- Data Table --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table class="w-full text-left border-collapse">
             <thead class="bg-[#232936] text-white">
@@ -76,7 +73,6 @@
     </div>
 </div>
 
-{{-- Unified Add/Edit Modal --}}
 <div id="addMenuModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
     <div id="modalBackdrop" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 opacity-0"></div>
 
@@ -120,14 +116,12 @@
                 <div id="urlField" class="hidden">
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">Target URL</label>
                     <input type="text" name="url" id="menu_url"
-                           class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition"
-                           placeholder="https://example.com/external-link">
+                           class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition">
                 </div>
 
                 <div>
                     <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">Menu Icon Asset</label>
                     <div class="border-2 border-dashed border-gray-200 rounded-xl p-10 text-center hover:border-blue-300 hover:bg-blue-50/50 transition cursor-pointer relative group">
-                        {{-- Added onchange for preview --}}
                         <input type="file" name="icon" onchange="previewImage(this)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                         <div class="space-y-3">
                             <div class="bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center mx-auto text-blue-500 transition-transform group-hover:scale-110">
@@ -138,7 +132,6 @@
                         </div>
                     </div>
 
-                    {{-- Image Preview Container --}}
                     <div id="previewContainer" class="hidden mt-6 p-4 border border-gray-100 rounded-xl bg-[#f8fafc] flex items-center gap-4 animate-fade-in">
                         <div class="w-16 h-16 bg-white rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
                             <img id="imagePreview" src="#" alt="Preview" class="w-full h-full object-contain p-2">
@@ -174,7 +167,6 @@
     const typeSelector = document.getElementById('typeSelector');
     const urlField = document.getElementById('urlField');
 
-    // Image Preview Logic
     window.previewImage = function(input) {
         const container = document.getElementById('previewContainer');
         const preview = document.getElementById('imagePreview');
@@ -201,7 +193,7 @@
         resetForm();
         document.getElementById('modalTitle').innerText = 'Add Menu Option';
         menuForm.action = "{{ route('menus.store') }}";
-        document.getElementById('methodField').innerHTML = '';
+        document.getElementById('methodField').innerHTML = ''; // Essential for Add route
         document.getElementById('submitBtn').innerText = 'Save Menu';
         
         modal.classList.remove('hidden');
@@ -214,6 +206,7 @@
 
     window.openEditModal = function(id) {
         resetForm();
+        
         fetch(`/menu-options/${id}/edit`)
             .then(res => res.json())
             .then(data => {
@@ -229,6 +222,7 @@
                     urlField.classList.add('hidden');
                 }
 
+                // Match form action to the resource update route
                 menuForm.action = `/menu-options/${id}`;
                 document.getElementById('methodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
                 document.getElementById('submitBtn').innerText = 'Update Menu';
@@ -253,7 +247,8 @@
     function resetForm() {
         menuForm.reset();
         urlField.classList.add('hidden');
-        removeSelectedImage(); // Clear preview on reset
+        removeSelectedImage(); 
+        document.getElementById('methodField').innerHTML = ''; // Fixed: clears method spoofing for clean slate
     }
 
     backdrop.addEventListener('click', closeModal);

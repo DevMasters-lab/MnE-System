@@ -8,17 +8,19 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
-    {
-        $users = User::all();
-        $editUser = null;
-
-        if ($request->has('edit')) {
-            $editUser = User::find($request->edit);
-        }
-
-        return view('users.index', compact('users', 'editUser'));
+   public function index(Request $request)
+{
+    $users = User::all();
+    // Fetch all roles from the database so they appear in your UI
+    $roles = \Spatie\Permission\Models\Role::all(); 
+    
+    $editUser = null;
+    if ($request->has('edit')) {
+        $editUser = User::find($request->edit);
     }
+
+    return view('users.index', compact('users', 'editUser', 'roles'));
+}
 
     public function store(Request $request)
     {
@@ -26,16 +28,17 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
-            'role' => 'required|string',
+            'role' => 'required|exists:roles,name', 
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
             'is_active' => $request->has('is_active') ? true : false,
         ]);
+
+        $user->assignRole($request->role);
 
         return redirect()->route('users.index')->with('success', 'User created successfully.');
     }
