@@ -27,7 +27,6 @@
             {{-- Dynamic Menu Items --}}
             @foreach(\App\Models\Menu::orderBy('order_no')->get() as $menu)
                 @can(strtoupper($menu->name))
-                {{-- FIX: Changed $menu->id to $menu->name below --}}
                 <a href="{{ route('menus.show', $menu->name) }}" 
                    class="flex items-center gap-3 px-4 py-3 {{ request()->fullUrlIs(route('menus.show', $menu->name)) ? 'bg-[#2a3142] border border-[#4f70ce] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} rounded-md transition group">
                     
@@ -49,7 +48,7 @@
             {{-- Administrative Section: Only shows if user has at least one of these permissions --}}
             @if(auth()->user()->can('MANAGE USER') || auth()->user()->can('MENU OPTION') || auth()->user()->can('MANAGE ROLE'))
             <div class="border-t border-gray-700 pt-4 space-y-2">
-                
+                    
                 @can('MANAGE USER')
                 <a href="{{ route('users.index') }}" 
                     class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('users.index') ? 'bg-[#2a3142] border border-[#4f70ce]' : 'text-gray-300 hover:text-white hover:bg-white/5' }} rounded-md transition">

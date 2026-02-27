@@ -54,8 +54,9 @@
 
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">Password <span id="passwordOptional" class="lowercase text-gray-300 font-normal italic ml-1 hidden">(Optional)</span></label>
-                        <input type="password" name="password" id="user_password" required
+                        <input type="password" name="password" id="user_password" required minlength="6"
                             class="w-full bg-[#f8fafc] border border-gray-100 rounded-xl px-5 py-4 text-sm focus:ring-2 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all">
+                        <p id="user_password_help" class="text-red-500 text-[10px] mt-2 font-bold uppercase tracking-widest hidden">Password must be at least 6 characters.</p>
                     </div>
 
                     <div>
@@ -155,6 +156,16 @@
     const userCard = document.getElementById('userCard');
     const userForm = document.getElementById('userForm');
     const passwordOptional = document.getElementById('passwordOptional');
+    const passwordHelp = document.getElementById('user_password_help');
+
+    // validate length as user types
+    document.getElementById('user_password').addEventListener('input', function() {
+        if (this.value.length > 0 && this.value.length < 6) {
+            passwordHelp.classList.remove('hidden');
+        } else {
+            passwordHelp.classList.add('hidden');
+        }
+    });
 
     window.openModal = function() {
         resetUserForm();
@@ -206,6 +217,7 @@
         document.getElementById('user_password').value = '';
         document.getElementById('userMethodField').innerHTML = '';
         passwordOptional.classList.add('hidden');
+        passwordHelp.classList.add('hidden');
     }
 
     userBackdrop.addEventListener('click', closeModal);
